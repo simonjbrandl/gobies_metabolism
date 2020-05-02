@@ -1,5 +1,14 @@
 plan <- drake_plan(
   
+  #### 1. COOCCURRENCE ####
+  
+  # load raw data for community composition
+  commdat = read.csv(file = "data/moorea_communities_allyears.csv"),
+  site_helper = helper_cooc(commdat),
+  cooc_map = clean_cooc_dat(commdat, site_helper),
+  moorea_shape = rgdal::readOGR(dsn=path.expand("data/coastline.shx"), layer="coastline.shx"),
+  #### 4. BEHAVIOR ####
+  
   # load raw data for aquarium trials
   aquarium.trials = read.csv(file = "data/feeding_trials.csv"),
   

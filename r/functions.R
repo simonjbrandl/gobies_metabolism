@@ -1,5 +1,44 @@
+#### SETUP & GENERAL FUNCTIONS ####
+
 #set colors for paper
 gobycols <- fish(2, option = "Pomacanthus_imperator")
+
+#### 1. COOCCURRENCE ####
+
+# function: create helper vector with all sites and metadata
+helper_cooc <- function(data){
+  data %>%
+  distinct(Sitenumber, Depth, Dimension, Habitat, Lat, Long) %>%
+  filter(Sitenumber != "BFAIL")  
+}
+
+# function: clean cooccurrence data
+clean_cooc_dat <- function(raw, helper){
+  raw %>% 
+      filter(Sitenumber != "BFAIL") %>%
+      mutate(Sitenumber= factor(Sitenumber)) %>%
+      filter(Tax %in% c("FUSINEOP", "GNATCAUE")) %>%
+      group_by(Sitenumber, Tax) %>%
+      summarize(abundance = n(), biomass = sum(W)) %>%
+      ungroup() %>% 
+      mutate(Tax = factor(Tax)) %>%
+      complete(Sitenumber, Tax, fill = list(abundance = 0, biomass = 0)) %>%
+      left_join(helper) %>%
+      mutate(pres = case_when(abundance > 0 ~ 1,
+                              TRUE ~ 0)) %>%
+      ungroup() %>%
+      mutate(occupancy = case_when(abundance < 1 ~ "NONE",
+                                   TRUE ~ as.character(Tax))) %>%
+      distinct()
+}
+
+# function: load shapefile and extract/tidy/fortify data
+tidy_shape <- function(data){
+  data %>% tidy()
+}
+
+
+#### 4. BEHAVIOR ####
 
 # function: clean aquarium trial data
 clean_aq_dat <- function(data){
