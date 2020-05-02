@@ -40,14 +40,24 @@ plan <- drake_plan(
   goby.jsdm = run_jsdm(input.data.jsdm[c(3,4)], input.data.jsdm[1]),
   
   # get predicted values 
-  # prepare two helper vectors
+  # prepare two helper vectors, id_sites and id_species
   id_sites = 1:50,
   id_species = sample(colnames(input.data.jsdm[c(3,4)]), 2),
+  
+  # predict from jsdm
   goby.predicted.theta = get_predicted_thetas(goby.jsdm, id_species, id_sites),
+  
+  # predictions for F. neophytus
   pred.fneo = get_pred_sp1(goby.predicted.theta),
+  
+  # prediction for G. cauerensis, combined with F. neophytus
   pred.complete = get_pred_sp2_comb(goby.predicted.theta, pred.fneo, input.data.jsdm),
-  output.fig1b = plot_jsdm_pred_compl(pred.complete),
-
+  
+  # figure of jSDM predicted values
+  output.fig1b = plot_jsdm_pred_compl(as.data.frame(pred.complete)),
+  
+  # combine A and B
+  ouput.fig1ab = comb_figs(output.fig1a, output.fig1b),
   
   #####################
   #### 4. BEHAVIOR ####

@@ -55,8 +55,7 @@ fortify_wgs_shape <- function(data){
 
 # function: plot map with circles 
 create_moorea_map <- function(geo, raw){
-ggplot() +
-  geom_polygon(data = geo, aes( x = long, y = lat, group = group), 
+  Fig1A <- ggplot() + geom_polygon(data = geo, aes( x = long, y = lat, group = group), 
                fill="grey46", alpha = 0.75) +
   theme_bw() +
   geom_jitter(data = raw, aes(x = Long, y = Lat, fill = occupancy, shape = Habitat, 
@@ -73,7 +72,10 @@ ggplot() +
   scale_y_continuous(breaks = (c(-17.5,-17.6))) +
   scale_x_continuous(breaks = c(-149.9, -149.8)) +
   guides(fill=guide_legend(override.aes=list(shape=c(22,22,22)))) 
-  }
+  
+  ggsave("output/plots/Figure1a_Brandl_Gobies.png", Fig1A, width = 4, height = 5)
+  return(Fig1A)
+}
 
 ##################
 #### 1B. JSDM ####
@@ -143,14 +145,15 @@ get_pred_sp2_comb <- function(data, comb, raw){
 as.data.frame(data[2]) %>%
   bind_cols(comb) %>%
   add_column(
-    habitat = raw[1])
+    habitat = raw$Habitat)
 }
 
 # function: plot jSDM predictions
 plot_jsdm_pred_compl <- function(predictions){
-  pred.post.plot <- ggplot(predictions, aes(x = pres_FUSINEO.mean, y = pres_GNASTCAUE.mean)) +
+  Fig1B <- ggplot(predictions, aes(x = pres_FUSINEOP.mean, y = pres_GNATCAUE.mean)) +
     geom_density_2d(color = "black", lty = 2) +
-    geom_jitter(aes(fill = habitat, shape = habitat), width = 0.05, height = 0.05, size = 3, alpha = 0.75) +
+    geom_jitter(aes(fill = as.factor(habitat), shape = as.factor(habitat)), 
+                width = 0.05, height = 0.05, size = 3, alpha = 0.75) +
     theme_bw() +
     theme(axis.text = element_text(color = "black", size = 10),
           legend.position = c(0.11,0.9),
@@ -163,8 +166,19 @@ plot_jsdm_pred_compl <- function(predictions){
     ylab(expression(Predicted~probability~of~italic("G. cauerensis")~occurrence)) +
     xlab(expression(Predicted~probability~of~italic("F. neophytus")~occurrence)) +
     guides()
+  
+  ggsave("output/plots/Figure1b_Brandl_Gobies.png", Fig1B, width = 4, height = 5)
+  return(Fig1B)
 }
 
+# function: combine Fig 1A and 1B
+comb_figs <- function(f1, f2){
+  Figure1_Brandletal_Gobies <- f1 | f2 +
+    plot_annotation(tag_levels = 'A')
+
+  ggsave("output/plots/Figure1_Brandl_Gobies.png", Figure1_Brandletal_Gobies, width = 10, height = 5)
+  
+}
 
 #### 4. BEHAVIOR ####
 
