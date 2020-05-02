@@ -3,7 +3,13 @@
 #set colors for paper
 gobycols <- fish(2, option = "Pomacanthus_imperator")
 
+#########################
 #### 1. COOCCURRENCE ####
+#########################
+
+#################
+#### 1A. MAP ####
+#################
 
 # function: create helper vector with all sites and metadata
 helper_cooc <- function(data){
@@ -35,6 +41,128 @@ clean_cooc_dat <- function(raw, helper){
 # function: load shapefile and extract/tidy/fortify data
 tidy_shape <- function(data){
   data %>% tidy()
+}
+
+# function: turn into WGS and fortify
+fortify_wgs_shape <- function(data){
+    data.frame(Northing = data$long, Easting = data$lat) %>% 
+    SpatialPoints(., proj4string=CRS("+proj=utm +zone=6 +south +datum=WGS84")) %>% 
+    spTransform(., CRS("+proj=longlat +datum=WGS84")) %>%
+    fortify() %>%
+    mutate(group = data$group)
+  
+}
+
+# function: plot map with circles 
+create_moorea_map <- function(geo, raw){
+ggplot() +
+  geom_polygon(data = geo, aes( x = long, y = lat, group = group), 
+               fill="grey46", alpha = 0.75) +
+  theme_bw() +
+  geom_jitter(data = raw, aes(x = Long, y = Lat, fill = occupancy, shape = Habitat, 
+                                        size = log(abundance+1)), 
+              alpha = 0.5, width = 0.003, height = 0.003) +
+  scale_fill_manual(values = c(gobycols, "white"), 
+                    labels = c(expression(italic("F. neophytus")), 
+                               expression(italic("G. cauerensis")), "None")) +
+  scale_shape_manual(values = c(21,24), labels = c("Lagoon", "Slope")) +
+  theme(legend.position = "top",
+        axis.text = element_text(color = "black", size = 10),
+        axis.title = element_blank(),
+        legend.title = element_blank()) +
+  scale_y_continuous(breaks = (c(-17.5,-17.6))) +
+  scale_x_continuous(breaks = c(-149.9, -149.8)) +
+  guides(fill=guide_legend(override.aes=list(shape=c(22,22,22)))) 
+  }
+
+##################
+#### 1B. JSDM ####
+##################
+
+# function to prepare data for jSDM
+data_prep_jsdm <- function(raw, helper){
+  raw %>% 
+    filter(Sitenumber != "BFAIL") %>%
+    mutate(Sitenumber= factor(Sitenumber)) %>%
+    filter(Tax %in% c("FUSINEOP", "GNATCAUE")) %>%
+    group_by(Sitenumber, Tax) %>%
+    summarize(abundance = n(), biomass = sum(W)) %>%
+    ungroup() %>% 
+    mutate(Tax = factor(Tax)) %>%
+    complete(Sitenumber, Tax, fill = list(abundance = 0, biomass = 0)) %>%
+    left_join(helper) %>%
+    # compute presence-absence
+    mutate(pres = case_when(abundance > 0 ~ 1,
+                            TRUE ~ 0)) %>%
+    ungroup() %>%
+    dplyr::select(Sitenumber, Depth, Dimension, Habitat, Tax, abundance, biomass, pres) %>%
+    # long gormat
+    pivot_wider(names_from = Tax, values_from = c(pres, abundance, biomass)) %>%
+    select(Habitat, Depth, pres_FUSINEOP, pres_GNATCAUE) %>%
+    arrange(Habitat)
+}
+
+# function: run joint species distribution model (jsdm)
+#' @param gobies occurrences of the two goby species
+#' @param env environmental variable in the model, here habitat
+run_jsdm <- function(gobies, env){
+  jSDM_gobies <- jSDM_probit_block (
+    # Response variable 
+    presence_site_sp = as.matrix(gobies), 
+    # Explanatory variables 
+    site_suitability = ~.,   
+    site_data = env, 
+    # Chains
+    burnin=20000, mcmc=20000, thin=5,
+    # Starting values
+    alpha_start=0, beta_start=0,
+    lambda_start=0, W_start=0,
+    V_alpha_start=1, 
+    # Priors
+    shape=0.5, rate=0.0005,
+    mu_beta=0, V_beta=1.0E6,
+    mu_lambda=0, V_lambda=10, verbose=1)
+}
+
+# function: get predicted values from jSDM
+get_predicted_thetas <- function(mod, spec, sit){
+  jSDM::predict.jSDM(mod,
+                     Id_species = spec, Id_sites = sit, type="quantile") 
+}
+
+# function 1: get estimates for first species into object
+get_pred_sp1 <- function(data){
+  as.data.frame(data[1])
+}
+
+# function 2: get estimates for second species, combine with first, add column from raw
+#' @param data predictions from model for second species
+#' @param comb predictions for first species
+#' @param raw raw data habitat column
+get_pred_sp2_comb <- function(data, comb, raw){
+as.data.frame(data[2]) %>%
+  bind_cols(comb) %>%
+  add_column(
+    habitat = raw[1])
+}
+
+# function: plot jSDM predictions
+plot_jsdm_pred_compl <- function(predictions){
+  pred.post.plot <- ggplot(predictions, aes(x = pres_FUSINEO.mean, y = pres_GNASTCAUE.mean)) +
+    geom_density_2d(color = "black", lty = 2) +
+    geom_jitter(aes(fill = habitat, shape = habitat), width = 0.05, height = 0.05, size = 3, alpha = 0.75) +
+    theme_bw() +
+    theme(axis.text = element_text(color = "black", size = 10),
+          legend.position = c(0.11,0.9),
+          legend.title = element_blank(),
+          legend.background = element_blank()) +
+    scale_fill_fish(option = "Epinephelus_fasciatus", end = 0.8, discrete = T, direction = 1) +
+    scale_shape_manual(values = c(21,24)) +
+    scale_y_continuous(limits = c(0, 1), oob = scales::squish) +
+    scale_x_continuous(limits = c(0, 1), oob = scales::squish) +
+    ylab(expression(Predicted~probability~of~italic("G. cauerensis")~occurrence)) +
+    xlab(expression(Predicted~probability~of~italic("F. neophytus")~occurrence)) +
+    guides()
 }
 
 
