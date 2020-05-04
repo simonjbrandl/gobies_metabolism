@@ -1,0 +1,41 @@
+﻿MB_ID,Full_ID,Species ,Site,Depth,Collection and extraction date,TL,SL,Mass,Girth,V_gape,H_gape
+G01,MOO18_D_FU1,Fusigobius neophytus,Public beach right,6,9-Jul-18,39,31.6,0.57,5,4.2,4
+G02,MOO18_D_FU2,Fusigobius neophytus,Public beach right,6,9-Jul-18,31,24.2,0.287,3.9,3.1,3.1
+G03,MOO18_D_FU3,Fusigobius neophytus,Public beach right,6,9-Jul-18,36.2,29,0.442,4.9,4.2,4
+G04,MOO18_D_FU4,Fusigobius neophytus,Public beach right,6,9-Jul-18,35.5,28,0.412,4.6,4,3.9
+G05,MOO18_D_FU5,Fusigobius neophytus,Public beach right,6,9-Jul-18,38,30.1,0.534,5,5.2,4.4
+G06,MOO18_D_GN1,Gnatholepis cauerensis,Public beach right,6,9-Jul-18,42.8,33.9,0.803,5.7,5.8,5.1
+G07,MOO18_D_GN2,Gnatholepis cauerensis,Public beach right,6,9-Jul-18,36.6,28.9,0.468,4.2,4,3.9
+G08,MOO18_D_GN3,Gnatholepis cauerensis,Public beach right,6,9-Jul-18,36.5,28,0.442,4.8,4.2,4
+G09,MOO18_D_GN4,Gnatholepis cauerensis,Public beach right,6,9-Jul-18,35,28,0.444,4.2,4.6,4.6
+G10,MOO18_D_GN5,Gnatholepis cauerensis,Public beach right,6,9-Jul-18,34,27,0.371,4,4.1,4
+G11,MOO18_D_FU6,Fusigobius neophytus,three buoys,5,10-Jul-18,51.2,41.5,1.508,8,7.6,6.5
+G12,MOO18_D_FU7,Fusigobius neophytus,three buoys,5,10-Jul-18,48,37.7,1.086,7,6.5,6.7
+G13,MOO18_D_FU8,Fusigobius neophytus,three buoys,5,10-Jul-18,40.4,32.5,0.655,5.1,5.2,4.9
+G14,MOO18_D_FU9,Fusigobius neophytus,three buoys,5,10-Jul-18,36,28.5,0.434,5,4.3,4.1
+G15,MOO18_D_FU10,Fusigobius neophytus,three buoys,5,10-Jul-18,38,30.2,0.502,4.9,4.9,4.8
+G16,MOO18_D_GN6,Gnatholepis cauerensis,three buoys,5,10-Jul-18,44.8,33.9,0.744,5.5,5.8,5.1
+G17,MOO18_D_GN7,Gnatholepis cauerensis,three buoys,5,10-Jul-18,40,31.6,0.639,5,5,4.9
+G18,MOO18_D_GN8,Gnatholepis cauerensis,three buoys,5,10-Jul-18,39.1,30,0.509,4.6,4.4,4.5
+G19,MOO18_D_GN9,Gnatholepis cauerensis,three buoys,5,10-Jul-18,33.1,26,0.361,4,4.4,4
+G20,MOO18_D_GN10,Gnatholepis cauerensis,three buoys,5,10-Jul-18,29.2,23.6,0.238,3.6,3.8,4
+G21,MOO18_D_FU11,Fusigobius neophytus,past motu,2,14-Jul-18,40.6,32,0.689,5.5,5.9,5.4
+G22,MOO18_D_FU12,Fusigobius neophytus,past motu,2,14-Jul-18,37.6,29.3,0.539,5,5.6,5.1
+G23,MOO18_D_FU13,Fusigobius neophytus,past motu,2,14-Jul-18,30,23.1,0.266,4,3.2,3.5
+G24,MOO18_D_FU14,Fusigobius neophytus,past motu,2,14-Jul-18,32.4,26,0.316,4.1,4.4,3.8
+G25,MOO18_D_FU15,Fusigobius neophytus,past motu,2,14-Jul-18,27.6,23,0.218,4,3.9,3.8
+G26,MOO18_D_GN11,Gnatholepis cauerensis,past motu,2,14-Jul-18,36.1,27.5,0.478,4.5,4.8,4.5
+G27,MOO18_D_GN12,Gnatholepis cauerensis,past motu,2,14-Jul-18,33.4,26.1,0.354,4,4.2,3.7
+G28,MOO18_D_GN13,Gnatholepis cauerensis,past motu,2,14-Jul-18,31.9,25,0.32,4,4.1,4
+G29,MOO18_D_GN14,Gnatholepis cauerensis,past motu,2,14-Jul-18,27,21.1,0.201,3.6,NA,NA
+G30,MOO18_D_GN15,Gnatholepis cauerensis,past motu,2,14-Jul-18,29.9,23.1,0.254,3.8,NA,NA
+G31,MOO18_D_FU16,Fusigobius neophytus,public beach left,1.5,14-Jul-18,39.9,31.3,0.608,5.6,5.5,5.2
+G32,MOO18_D_FU17,Fusigobius neophytus,public beach left,1.5,14-Jul-18,45.3,35.2,0.801,5.5,5.8,5
+G33,MOO18_D_FU18,Fusigobius neophytus,public beach left,1.5,14-Jul-18,36,29,0.436,4.5,4.5,4
+G34,MOO18_D_FU19,Fusigobius neophytus,public beach left,1.5,14-Jul-18,33,26,0.304,4,4.4,4.1
+G35,MOO18_D_FU20,Fusigobius neophytus,public beach left,1.5,14-Jul-18,30,23.7,0.223,3.8,4,3.9
+G36,MOO18_D_GN16,Gnatholepis cauerensis,public beach left,1.5,14-Jul-18,42,32.5,0.697,5.1,6,NA
+G37,MOO18_D_GN17,Gnatholepis cauerensis,public beach left,1.5,14-Jul-18,42.5,32.2,0.774,5.6,NA,NA
+G38,MOO18_D_GN18,Gnatholepis cauerensis,public beach left,1.5,14-Jul-18,39.8,31.1,0.706,6,NA,NA
+G39,MOO18_D_GN19,Gnatholepis cauerensis,public beach left,1.5,14-Jul-18,37.2,28.9,0.501,4.5,NA,NA
+G40,MOO18_D_GN20,Gnatholepis cauerensis,public beach left,1.5,14-Jul-18,39.8,30.4,0.608,4.1,NA,NA

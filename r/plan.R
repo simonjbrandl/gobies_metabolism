@@ -1,12 +1,14 @@
 plan <- drake_plan(
   
   #########################
+  #########################
   #### 1. COOCCURRENCE ####
   #########################
+  #########################
   
-  #################
+
   #### 1A. MAP ####
-  #################
+
   
   # load raw data for community composition
   commdat = read.csv(file = "data/moorea_communities_allyears.csv"),
@@ -29,9 +31,9 @@ plan <- drake_plan(
   # plot map with abundances of the two gobies
   output.fig1a = create_moorea_map(moorea.wgs.fortified, cooc.map),
   
-  ##################
+
   #### 1B. JSDM ####
-  ##################
+
   
   # prepare data to be run in jSDM
   input.data.jsdm = data_prep_jsdm(commdat, site.helper),
@@ -59,8 +61,194 @@ plan <- drake_plan(
   # combine A and B
   ouput.fig1ab = comb_figs(output.fig1a, output.fig1b),
   
+
+  #######################
+  #######################
+  #### 2. PHYSIOLOGY ####
+  #######################
+  #######################
+  
+  # load raw data for physiology
+  respodat = read.csv(file = "data/respirometry_gnatholepis_fusigobius.csv"),
+  
+  # clean data from respirometry trials
+  respdat.clean = clean_resp_dat(respodat),
+  
+  #### SMR ####
+  
+  # set prior
+  smr.prior = get_smr_prior("SMR", respdat.clean),
+  
+  # run model
+  smr.brms = run_brms_smr("SMR", respdat.clean, smr.prior),
+  
+  # write summary table of smr.brms as html
+  output.supptab1 = write_sum_tab(smr.brms, "SuppTable1.html"),
+  
+  # predict from brms_mod2 using generalizable function for mass = 1g
+  smr.mod.pred.1g = predict_from_brms_phys(respdat.clean,
+                                        W = rep(1, n = 1000), TempC = mean(respdat.clean$TempC),
+                                        mod = smr.brms, 
+                                        draws = 1000, 
+                                        backtrans = T, transform = "e10"),
+  
+  # get summary of predictions for in-text infromation
+  smr.pred.sum = predict_summary_phys(smr.mod.pred.1g, SMR),
+  
+  # predict for full size range
+  smr.mod.pred.full = predict_from_brms_phys(respdat.clean,
+                                             W = seq_range(W, n = 1000), TempC = mean(respdat.clean$TempC),
+                                             mod = smr.brms, 
+                                             draws = 1000, 
+                                             backtrans = T, transform = "e10"),
+  
+  # plot predictions from SMR model (Fig 2A)
+  output.fig2a = plot_smr_preds(respdat.clean, "SMR", smr.mod.pred.full),
+  
+  # predict for average size 
+  smr.mod.pred.avg = predict_from_brms_phys(respdat.clean,
+                                             W = mean(respdat.clean$W), TempC = mean(respdat.clean$TempC),
+                                             mod = smr.brms, 
+                                             draws = 1000, 
+                                             backtrans = T, transform = "e10"),
+  
+  # functions to get partial densities
+  p.funs = partial_density(intervals = c(0.025, 0.5, 0.975)),
+  
+  # calculate densities for both species
+  density.calcs = get_partial_densities(smr.mod.pred.avg),
+  
+  # calculate summary values for lines in plot
+  density.sums = get_partial_density_sums(smr.mod.pred.avg, p.funs),
+  
+  # plot density curves for average weight 
+  output.fig2b = plot_density_avg_weight_smr(density.calcs, density.sums),
+  
+  
+  #### MMR ####
+  
+  # set prior
+  mmr.prior = get_smr_prior("MaxMR", respdat.clean),
+  
+  # run model
+  mmr.brms = run_brms_smr("MaxMR", respdat.clean, mmr.prior),
+  
+  # write summary table of smr.brms as html
+  output.supptab2 = write_sum_tab(mmr.brms, "SuppTable2.html"),
+  
+  # predict from brms_mod2 using generalizable function for mass = 1g
+  mmr.mod.pred.1g = predict_from_brms_phys(respdat.clean,
+                                           W = rep(1, n = 1000), TempC = mean(respdat.clean$TempC),
+                                           mod = mmr.brms, 
+                                           draws = 1000, 
+                                           backtrans = T, transform = "e10"),
+  
+  # get summary of predictions for in-text infromation
+  mmr.pred.sum = predict_summary_phys(mmr.mod.pred.1g, MaxMR),
+  
+  # predict for full size range
+  mmr.mod.pred.full = predict_from_brms_phys(respdat.clean,
+                                             W = seq_range(W, n = 1000), TempC = mean(respdat.clean$TempC),
+                                             mod = mmr.brms, 
+                                             draws = 1000, 
+                                             backtrans = T, transform = "e10"),
+  
+  # plot predictions from SMR model (Fig 2A)
+  output.fig2c = plot_mmr_preds(respdat.clean, "MaxMR", mmr.mod.pred.full),
+  
+  # predict for average size 
+  mmr.mod.pred.avg = predict_from_brms_phys(respdat.clean,
+                                            W = mean(respdat.clean$W), TempC = mean(respdat.clean$TempC),
+                                            mod = mmr.brms, 
+                                            draws = 1000, 
+                                            backtrans = T, transform = "e10"),
+  
+  
+  # calculate densities for both species
+  density.calcs.mmr = get_partial_densities(mmr.mod.pred.avg),
+  
+  # calculate summary values for lines in plot
+  density.sums.mmr = get_partial_density_sums(mmr.mod.pred.avg, p.funs),
+  
+  # plot density curves for average weight 
+  output.fig2d = plot_density_avg_weight_mmr(density.calcs.mmr, density.sums.mmr),
+  
+  # combine A and B
+  output.fig2abcd = comb_figs2(output.fig2a, output.fig2b, output.fig2c, output.fig2d),
+  
+
+  #######################
+  #######################
+  #### 3. MORPHOLOGY ####
+  #######################
+  #######################
+  
+  #load raw data for external morphology and gut
+  ext.morpho = read.csv(file ="data/morphology_mouth.csv"),
+  gut.morpho = read.csv(file = "data/morphology_gut.csv"),
+  
+  # clean data
+  ext.morpho.clean = clean_morphology(ext.morpho),
+  
+  # run hgape model
+  hgape.brms = run_brms_morpho("H_gape", ext.morpho.clean),
+  
+  # predict hgape model
+  hgape.pred = predict_from_brms_morph(ext.morpho.clean,
+                                       SL = seq_range(SL, n = 1000),
+                                       mod = hgape.brms, 
+                                       draws = 1000, 
+                                       backtrans = F),
+  
+  # write summary table as html
+  output.supptab3 = write_sum_tab(hgape.brms, "SuppTable3.html"),
+  
+  # run vgape model
+  vgape.brms = run_brms_morpho("V_gape", ext.morpho.clean),
+  
+  # predict hgape model
+  vgape.pred = predict_from_brms_morph(ext.morpho.clean,
+                                       SL = seq_range(SL, n = 1000),
+                                       mod = vgape.brms, 
+                                       draws = 1000, 
+                                       backtrans = F),
+  
+  # write summary table as html
+  output.supptab4 = write_sum_tab(vgape.brms, "SuppTable4.html"),
+  
+  # run girth model
+  girth.brms = run_brms_morpho("Girth", ext.morpho.clean),
+  
+  # predict girth model
+  girth.pred = predict_from_brms_morph(ext.morpho.clean,
+                                       SL = seq_range(SL, n = 1000),
+                                       mod = girth.brms, 
+                                       draws = 1000, 
+                                       backtrans = F),
+  
+  # write summary table as html
+  output.supptab5 = write_sum_tab(girth.brms, "SuppTable5.html"),
+  
+  # run gut model
+  gut.brms = run_brms_morpho("GIT", gut.morpho),
+  
+  # predict hgape model
+  gut.pred = predict_from_brms_morph(gut.morpho,
+                                       SL = seq_range(SL, n = 1000),
+                                       mod = gut.brms, 
+                                       draws = 1000, 
+                                       backtrans = F),
+  # write summary table as html
+  output.supptab6 = write_sum_tab(gut.brms, "SuppTable6.html"),
+  
+  
+  
+  
+  
+  #####################
   #####################
   #### 4. BEHAVIOR ####
+  #####################
   #####################
   
   # load raw data for aquarium trials
