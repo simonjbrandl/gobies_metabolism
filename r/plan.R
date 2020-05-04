@@ -83,7 +83,7 @@ plan <- drake_plan(
   smr.brms = run_brms_smr("SMR", respdat.clean, smr.prior),
   
   # write summary table of smr.brms as html
-  output.supptab1 = write_sum_tab(smr.brms, "SuppTable1.html"),
+  output.supptab1 = write_sum_tab(smr.brms, "SuppTable1.doc"),
   
   # predict from brms_mod2 using generalizable function for mass = 1g
   smr.mod.pred.1g = predict_from_brms_phys(respdat.clean,
@@ -134,7 +134,7 @@ plan <- drake_plan(
   mmr.brms = run_brms_smr("MaxMR", respdat.clean, mmr.prior),
   
   # write summary table of smr.brms as html
-  output.supptab2 = write_sum_tab(mmr.brms, "SuppTable2.html"),
+  output.supptab2 = write_sum_tab(mmr.brms, "SuppTable2.doc"),
   
   # predict from brms_mod2 using generalizable function for mass = 1g
   mmr.mod.pred.1g = predict_from_brms_phys(respdat.clean,
@@ -201,7 +201,7 @@ plan <- drake_plan(
                                        backtrans = F),
   
   # write summary table as html
-  output.supptab3 = write_sum_tab(hgape.brms, "SuppTable3.html"),
+  output.supptab3 = write_sum_tab(hgape.brms, "SuppTable3.doc"),
   
   # run vgape model
   vgape.brms = run_brms_morpho("V_gape", ext.morpho.clean),
@@ -214,7 +214,7 @@ plan <- drake_plan(
                                        backtrans = F),
   
   # write summary table as html
-  output.supptab4 = write_sum_tab(vgape.brms, "SuppTable4.html"),
+  output.supptab4 = write_sum_tab(vgape.brms, "SuppTable4.doc"),
   
   # run girth model
   girth.brms = run_brms_morpho("Girth", ext.morpho.clean),
@@ -227,7 +227,7 @@ plan <- drake_plan(
                                        backtrans = F),
   
   # write summary table as html
-  output.supptab5 = write_sum_tab(girth.brms, "SuppTable5.html"),
+  output.supptab5 = write_sum_tab(girth.brms, "SuppTable5.doc"),
   
   # run gut model
   gut.brms = run_brms_morpho("GIT", gut.morpho),
@@ -239,7 +239,7 @@ plan <- drake_plan(
                                        draws = 1000, 
                                        backtrans = F),
   # write summary table as html
-  output.supptab6 = write_sum_tab(gut.brms, "SuppTable6.html"),
+  output.supptab6 = write_sum_tab(gut.brms, "SuppTable6.doc"),
   
   
   # plot horizontal gape
@@ -263,11 +263,103 @@ plan <- drake_plan(
   #########################
   #########################
   
+  # load datasets
+  # Goby_Metadata.csv = metadata for extractions
+  # COI_Gobies.csv = COI metabarcoding data
+  # 23S_Gobies.csv = 23S metabarcoding data
   gobies.meta = read.csv(file = "data/Goby_Metadata.csv"),
   gobies.coi = read.csv(file = "data/COI_Gobies.csv"), 
   gobies.23s = read.csv(file = "data/23S_Gobies.csv"),
   
+  # clean metadata
+  clean.metadata = clean_meta(gobies.meta),
   
+  # clean COI & 23 S data
+  clean.coi = clean_sequence_data(gobies.coi, 11, 48, "genus", levels(gobies.meta$Genus)),
+  clean.23s = clean_sequence_data(gobies.23s, 10, 47, "Genus", levels(gobies.meta$Genus)),
+  
+  # calculate presence/absence of sequences
+  pa.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = T, metric = "pa"),
+  pa.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = T, metric = "pa"),
+  
+  ##############################
+  #### 3A. NICHES & NETWORK ####
+  ##############################
+  
+  # calculate relative read abundance of sequences
+  rra.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = T, metric = "rra"),
+  rra.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = T, metric = "rra"),
+  
+  # caluclate species-level average of sequences
+  rra.coi.species = sum_species_comp(rra.coi, clean.metadata),
+  rra.23s.species = sum_species_comp(rra.23s, clean.metadata),
+  
+  # run niche model with Pianka index and ra3
+  rra.coi.niches = run_niche_model(rra.coi.species),
+  rra.23s.niches = run_niche_model(rra.23s.species),
+  
+  # bring PA data into long format for network
+  pa.coi.long = lengthen_seq_dat(pa.coi, clean.metadata),
+  pa.23s.long = lengthen_seq_dat(pa.23s, clean.metadata),
+  
+  # prepare the two datasets for merging
+  pa.coi.prepped = prepare_coi(pa.coi.long),
+  pa.23s.prepped = prepare_23s(pa.23s.long),
+  
+  # merge datasets for network analysis
+  prim.comb.network = combine_for_network(pa.coi.prepped, pa.23s.prepped),
+  
+  # run network analysis & collect output
+  goby.network.modules = computeModules(prim.comb.network[-1], method = "Beckett", forceLPA = FALSE),
+  # only run the line below if you have lots of time. Takes ~6hrs on a Macbook Pro 2.6 GHz Intel Core i7
+  # output is the same as line above
+  # goby.network.modules = metaComputeModules(prim.comb.network[-1], method = "Beckett", N = 50, forceLPA = FALSE),
+  
+  modules = as.data.frame(goby.network.modules@modules[-1, -c(1,2) ]),
+
+  # integrate module dataset
+  module.membership = clean_modularity(modules, prim.comb.network, clean.metadata),
+  output.modules = write.csv(module.membership, file = "output/data/module_membership.csv", row.names = FALSE),
+  
+  # combine modularity with network input
+  network.tree.modules = comb_module_network(pa.coi.prepped, pa.23s.prepped, module.membership),
+  
+  # plot network tree
+  output.fig3c = make_network_tree(network.tree.modules),
+  
+  
+  #########################
+  #### 3B. RAREFACTION ####
+  #########################
+  
+  # get number of sequences wide
+  nbseq.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = F),
+  nbseq.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = F),
+  
+  # turn into rarefactor format 
+  nbseq.genspe.coi = wide_to_rare(nbseq.coi, clean.metadata),
+  nbseq.genspe.23s = wide_to_rare(nbseq.23s, clean.metadata),
+  
+  # turn into lists 
+  nbseq.list.coi = tibble_to_list(nbseq.genspe.coi),
+  nbseq.list.23s = tibble_to_list(nbseq.genspe.23s),
+  
+  # run rarefaction and fortify
+  rarefaction.fort.coi = rarify_to_plot(nbseq.list.coi, nbseq.genspe.coi, clean.metadata),
+  rarefaction.fort.23s = rarify_to_plot(nbseq.list.23s, nbseq.genspe.23s, clean.metadata),
+  
+  # create plot for coi rarefaction curves
+  output.fig3a = plot_rarefaction_curves(rarefaction.fort.coi),
+  output.fig3b = plot_rarefaction_curves(rarefaction.fort.23s),
+  
+  # Figure 3
+  output.fig3abc = comb_figs3(output.fig3a, output.fig3b, output.fig3c),
+  
+  # create data for Figure S2
+  prey.taxa = plot_prey_rra(gobies.23s, rra.23s, clean.metadata),
+  
+  # plot Figure S2
+  output.figs2 = plot_prey_taxa(prey.taxa),
   
   #####################
   #####################

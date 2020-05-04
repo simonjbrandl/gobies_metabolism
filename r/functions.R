@@ -9,9 +9,16 @@ write_sum_tab <- function(model, output){
   tab_model(model, file = out)
 }
 
+empty_na <- function(x){
+  if("factor" %in% class(x)) x <- as.character(x) ## since ifelse wont work with factors
+  ifelse(as.character(x)!="", x, NA)
+}
+
 
 #########################
+#########################
 #### 1. COOCCURRENCE ####
+#########################
 #########################
 
 #################
@@ -180,10 +187,10 @@ plot_jsdm_pred_compl <- function(predictions){
 
 # function: combine Fig 1A and 1B
 comb_figs <- function(f1, f2){
-  Figure1_Brandletal_Gobies <- f1 | f2 +
+  Figure1_Brandl_Gobies <- f1 | f2 +
     plot_annotation(tag_levels = 'A')
 
-  ggsave("output/plots/Figure1_Brandl_Gobies.png", Figure1_Brandletal_Gobies, width = 10, height = 5)
+  ggsave("output/plots/Figure1_Brandl_Gobies.png", Figure1_Brandl_Gobies, width = 10, height = 5)
   
 }
 
@@ -414,12 +421,10 @@ plot_density_avg_weight_mmr <- function(density, density.sum){
 
 # function: combine Fig 2A, 2B, 2C and 2D
 comb_figs2 <- function(f1, f2, f3, f4){
-  Figure2_Brandletal_Gobies <- (f1 | f2) / (f3 | f4) +
+  Figure2_Brandl_Gobies <- (f1 | f2) / (f3 | f4) +
     plot_annotation(tag_levels = 'A')
-  
-  return(Figure2_Brandletal_Gobies)
 
-  ggsave("output/plots/Figure2_Brandl_Gobies.png", Figure2_Brandletal_Gobies, width = 11, height = 8)
+  ggsave("output/plots/Figure2_Brandl_Gobies.png", Figure2_Brandl_Gobies, width = 11, height = 8)
 
 }
 
@@ -507,24 +512,366 @@ morpho_plot <- function(raw, yvar, predicted, ylableg){
 
 # function: combine Fig 2A, 2B, 2C and 2D
 comb_figsS1 <- function(f1, f2, f3, f4){
-  FigureS1_Brandletal_Gobies <- (f1 | f2) / (f3 | f4) +
+  FigureS1_Brandl_Gobies <- (f1 | f2) / (f3 | f4) +
     plot_annotation(tag_levels = 'A')
   
-  return(FigureS1_Brandletal_Gobies)
   
-  ggsave("output/plots/FigureS1_Brandl_Gobies.png", FigureS1_Brandletal_Gobies, width = 10, height = 8)
+  ggsave("output/plots/FigureS1_Brandl_Gobies.png", FigureS1_Brandl_Gobies, width = 10, height = 8)
 }
 
 
 
 #########################
 #########################
-#### 4. GUT COMTENTS ####
+#### 4. GUT CONTENTS ####
 #########################
 #########################
 
+# function: extract necessary information from metadata
+clean_meta <- function(metadata){
+  metadata %>%
+    select(Extraction_ID, Gen_Spe)
+}
+
+# function: remove empty rows and clean up self hits 
+#' @param raw raw data of sequences in rows, sequence information and host specimens in columns
+#' @param begin.col column number of first host fish specimen
+#' @param end.col column number of last host fish specimen
+#' @param column column by which to filter
+#' @param filter.by vector of strings to filter agains
+
+clean_sequence_data <- function(raw, begin.col, end.col, column, filter.by){
+  filter_criteria <- interp(~!y %in% x, .values=list(y = as.name(column), x = filter.by))
+  raw %>%
+    # sum ESVs/OTUs over columns that contain hosts
+    mutate(rowsum = rowSums(.[begin.col:end.col])) %>%
+    # remove all empty OTU rows by filtering
+    filter(rowsum > 1) %>%
+    select(-rowsum) %>%
+    #remove self-hits
+    filter_(filter_criteria) 
+}
 
 
+# function: turn sequences into wide format
+#' @param raw raw data of sequences in rows, sequence information and host specimens in columns
+#' @param id.pos column number of your seq_ID column
+#' @param begin.col column number of first host fish specimen
+#' @param end.col column number of last host fish specimen
+#' @param compute logical whether to compute a metric (TRUE) or retain raw sequence reads (FALSE)
+#' @param metric type of metric to compute, with options "pa" for presence-absence or "rra" for relative read abundance
+
+widen_sequence_data <- function(raw, id.pos, begin.col, end.col, compute = F, metric = NA){
+  
+  if (compute & is.na(metric)){
+    stop("Need to specify metric")
+  }
+  
+  raw.long <- raw %>%
+    # remove all but seq_ID and fish specimen columns
+    dplyr::select(c(id.pos, begin.col:end.col)) %>%
+    # bring to long format
+    pivot_longer(names_to = "Extraction_ID", values_to = "value", -seq_ID)
+  
+  raw.wide <- raw.long %>%
+    pivot_wider(id_cols = Extraction_ID, names_from = seq_ID, values_from = value, values_fill = list(value = 0))
+
+  
+  if (compute){
+    if (metric == "pa"){
+      pa <- raw.long %>%
+        mutate(pres.abs = case_when(value > 0 ~ 1,
+                                        TRUE ~ 0)) %>%
+        pivot_wider(id_cols = Extraction_ID, names_from = seq_ID, values_from = pres.abs, values_fill = list(pres.abs = 0))
+        return(pa)
+        } else if (metric == "rra"){
+          rra <- raw.long %>%
+            group_by(Extraction_ID) %>%
+            mutate(relreadabu = value/sum(value)) %>%
+            replace_na(list(relreadabu = 0)) %>%
+            ungroup() %>%
+            pivot_wider(id_cols = Extraction_ID, names_from = seq_ID, values_from = relreadabu, values_fill = list(relreadabu = 0))
+          return(rra)
+        }
+  }
+  return(raw.wide)
+}
+
+# function: summarize to species level
+sum_species_comp <- function(seqwide, meta){
+  seqwide %>%
+    pivot_longer(-Extraction_ID, names_to = "seq_ID", values_to = "rra") %>%
+    left_join(meta) %>%
+    group_by(Gen_Spe, seq_ID) %>%
+    summarize(avg.rra = mean(rra)) %>%
+    ungroup() %>%
+    pivot_wider(id_cols = Gen_Spe, names_from = seq_ID, values_from = avg.rra, values_fill = list(avg.rra = 0))
+  }
+
+# function: run niche partitioning model through EcoSimR
+run_niche_model <- function(data){
+  EcoSimR::niche_null_model(speciesData=data,
+                            algo="ra3", metric="pianka", 
+                            suppressProg=TRUE,nReps=1000)
+}
+
+
+# function: bring into long format
+lengthen_seq_dat <- function(data.wide, meta){
+  data.wide %>%
+    pivot_longer(-Extraction_ID, names_to = "seq_ID", values_to = "value") %>%
+    filter(value > 0) %>%
+    group_by(seq_ID) %>%
+    mutate(total = sum(value)) %>%
+    left_join(meta)
+}
+
+
+# function: prep COI
+prepare_coi <- function(data.coi){
+  data.coi %>%
+    mutate(dataset = "coi") %>%
+    unite("ID_dataset", c(seq_ID, dataset), sep = "_", remove = F)
+}
+
+# function: prep 23s
+prepare_23s <- function(data.23s){
+  data.23s %>%
+    mutate(dataset = "23s") %>%
+    unite("ID_dataset", c(seq_ID, dataset), sep = "_", remove = F)
+}
+
+# function: combine primers for network
+combine_for_network <- function(data1, data2){
+  bind_rows(data1, data2) %>%
+    filter(total > 1) %>%
+    pivot_wider(id_cols = Extraction_ID, names_from = ID_dataset, values_from = value, values_fill = list(value = 0)) %>%
+    mutate(Extraction_ID = factor(Extraction_ID))
+}
+
+# function: clean modularity data 
+clean_modularity <- function(module.data, network.data, meta.data){
+  # select only columns that correspond to fish specimens (i.e. length of network data rows)
+  module.data %>%
+    select(1:36) %>%
+    mutate(module = as.character(seq(1:nrow(module.data)))) %>%
+    pivot_longer(cols = 1:36, names_to = "sequence", values_to = "value") %>%
+    mutate(Extraction_ID = rep(network.data$Extraction_ID, nrow(module.data))) %>%
+    filter(value > 0) %>%
+    inner_join(meta.data) %>%
+    distinct()
+}
+
+# function: combine modules and network
+comb_module_network <- function(data1, data2, modularity){
+  bind_rows(data1, data2) %>%
+    filter(total > 1) %>%
+    inner_join(modularity[1:4], by = "Extraction_ID") %>%
+    mutate(colorvec = case_when(dataset == "23s" ~ "grey90",
+                                TRUE ~ "grey10"))
+}
+
+# function: plot network tree
+make_network_tree <- function(tree.data){
+    ggplot(data = tree.data) +
+    geom_net(layout.alg = "kamadakawai", aes(from_id = Extraction_ID, to_id = ID_dataset, colour = Gen_Spe, fill = Gen_Spe, shape = as.factor(module)),
+             alpha = 0.8, lwd=5, labelon = F, repel = T, ealpha = 0.3, arrowsize = 0.25, linewidth = 0.4, singletons = F, directed = TRUE,
+             vjust = 0.5, hjust = 0.5) +
+    # labelcolour = cfnet2$lcolour) +
+    theme_net() +
+    scale_shape_manual(values = c(21:25), name = "Module") +
+    scale_color_manual(values = gobycols, name = "Species", labels = c(expression(italic("Fusigobius neophytus")), expression(italic("Gnatholepis cauerensis")))) +
+    scale_fill_manual(values = gobycols, name = "Species", labels = c(expression(italic("Fusigobius neophytus")), expression(italic("Gnatholepis cauerensis")))) +
+    theme(legend.position = "top")
+}
+
+# function: turn wide sequences into rarefaction dataset
+wide_to_rare <- function(seq.wide, meta){
+  seq.wide %>%
+  pivot_longer(names_to = "seq_ID", values_to = "seq_abu", -Extraction_ID) %>%
+    left_join(meta) %>%
+    group_by(Gen_Spe, seq_ID) %>%
+    summarize(sum_seq_abu = sum(seq_abu)) %>%
+    pivot_wider(names_from = Gen_Spe, values_from = sum_seq_abu)
+}
+
+# function: tibble to transposed list for rarefaction
+tibble_to_list <- function(tibble){
+  tib.df <- as.data.frame(tibble)
+  rownames(tib.df) <- tib.df[,1]
+  tib.df.rn <- tib.df[-1]
+  
+  # transpose
+  tib.df.trans <- as.data.frame(t(tib.df.rn))
+  # split dataframe into lists, with each species/population as an element
+  tib.df.trans.list <- split(tib.df.trans, rownames(tib.df.trans))
+  
+  # transpose each element
+  tib.df.list.t <- lapply(tib.df.trans.list, t)
+}
+
+# function: run rarefaction and fortify data
+rarify_to_plot <- function(data, raw.tibble, metadata){
+  rare.data <- iNEXT(data, q=0, 
+        datatype="abundance", size=NULL, 
+        endpoint=max(colSums(raw.tibble[-1])),
+        knots=50, se=TRUE, conf=0.95, nboot=100)
+  rare.data %>%
+    fortify(., type = 1) %>%
+    rename(Gen_Spe = site) %>%
+    inner_join(metadata)
+}
+
+# function: plot rarefaction curves
+plot_rarefaction_curves <- function(rarefaction.fort){
+  pointvals <- rarefaction.fort %>%
+    filter(method == "observed")
+  linevals <- rarefaction.fort %>%
+    filter(method != "observed")
+  
+  ggplot(rarefaction.fort, aes(x = x, y = y, color=Gen_Spe)) +
+    geom_line(data=linevals, aes(linetype=method), lwd=0.5) + 
+    geom_ribbon(aes(ymin=y.lwr, ymax=y.upr,fill=Gen_Spe, color=NULL), alpha=0.2) + 
+    geom_point(data = pointvals) +
+    labs(x="Number of sequences", y="Number of ESVs") +
+    theme_bw() + theme(plot.title = element_text(size = 10),
+                       axis.text = element_text(color = "black", size = 10),
+                       axis.title = element_text(color = "black", size = 10),
+                       legend.title=element_text(size=10), 
+                       legend.text=element_text(size=10),
+                       legend.position = "top") +
+    scale_color_manual(values = c(gobycols),name = "Species", 
+                       labels = c(expression(italic("Fusigobius neophytus")), 
+                                  expression(italic("Gnatholepis cauerensis"))))+
+    scale_fill_manual(values = c(gobycols), name = "Species", 
+                      labels = c(expression(italic("Fusigobius neophytus")), 
+                                 expression(italic("Gnatholepis cauerensis"))))+
+    theme(strip.text = element_text(face = "italic"),
+          plot.title = element_text(size = 14, face = "bold"))
+}
+
+# function: combine Fig 2A, 2B, 2C and 2D
+comb_figs3 <- function(f1, f2, f3){
+  Figure3_Brandl_Gobies <- (f1 / f2) | f3 +
+    plot_annotation(tag_levels = 'A')
+  
+  
+  ggsave("output/plots/Figure3_Brandl_Gobies.png", Figure3_Brandl_Gobies, width = 14, height = 8)
+}
+
+
+# function: prey taxa for 23s data
+plot_prey_rra <- function(tax, rra, metadata){
+  taxonomy <- tax[1:8]
+  
+  preytax <- rra %>%
+    pivot_longer(cols = 2:length(colnames(rra)), names_to = "seq_ID") %>%
+    pivot_wider(names_from = Extraction_ID) %>%
+    inner_join(taxonomy, by = "seq_ID") %>%
+    dplyr::select(seq_ID, Phylum, Order, Family, Genus, Species, everything()) %>%
+    mutate_each(funs(empty_na)) %>%
+    # make sure all empty cells are equal
+    replace_na(list(Phylum = "null",
+                    Order = "null",
+                    Family = "null",
+                    Genus = "null",
+                    Species = "null")) %>%
+    # fill cells with respective closest levels
+    # terrible code but works
+    mutate(high_tax = case_when(Genus == "null" ~ "Unidentified",
+                                Family == "null" ~ as.character(Genus),
+                                Order == "null" ~ as.character(Family),
+                                Phylum == "null" ~ as.character(Order),
+                                Phylum != "null" ~ as.character(Phylum),
+                                TRUE ~ as.character(Phylum))) %>%
+    mutate(high_replace = case_when(high_tax == "Unidentified" & Phylum != "null" ~ as.character(Phylum),
+                                    TRUE ~ as.character(high_tax))) %>%
+    mutate(high_replace = case_when(high_tax == "Unidentified" & Order != "null" ~ as.character(Order),
+                                    TRUE ~ as.character(high_replace))) %>%
+    mutate(high_replace = case_when(high_tax == "Unidentified" & Family != "null" ~ as.character(Family),
+                                    TRUE ~ as.character(high_replace))) %>%
+    mutate(high_replace = case_when(high_tax == "Unidentified" & Genus != "null" ~ as.character(Genus),
+                                    TRUE ~ as.character(high_replace))) %>%
+    dplyr::select(high_tax, high_replace, everything()) %>%
+    # assign lower level taxa to higher 
+    mutate(highest = case_when(high_replace == "Bacillariaceae" ~ "Bacillariophyta",
+                               high_replace == "Bangiaceae" ~ "Rhodophyta",
+                               high_replace == "Bangiales" ~ "Rhodophyta",
+                               high_replace == "Bigelowiella" ~ "Cercozoa",
+                               high_replace == "Ceramiales" ~ "Rhodophyta",
+                               high_replace == "Chattonellales" ~ "Ochrophyta",
+                               high_replace == "Chlorellales" ~ "Chlorophyta",
+                               high_replace == "Corallinales" ~ "Rhodophyta",
+                               high_replace == "Cryptomonadales" ~ "Cryptophyta",
+                               high_replace == "Cyanophoraceae" ~ "Glaucophyta",
+                               high_replace == "Cyanoptyche" ~ "Glaucophyta",
+                               high_replace == "Desmochloris" ~ "Chlorophyta",
+                               high_replace == "Dictyotales" ~ "Ochrophyta",
+                               high_replace == "Ectocarpales" ~ "Ochrophyta",
+                               high_replace == "Erythropeltidales" ~ "Rhodophyta",
+                               high_replace == "Euglenida" ~ "Euglenozoa",
+                               high_replace == "Euglyphidae" ~ "Cercozoa",
+                               high_replace == "Euglyphida" ~ "Cercozoa",
+                               high_replace == "Eustigmatales" ~"Ochrophyta",
+                               high_replace == "Eutreptia" ~ "Euglenozoa",
+                               high_replace == "Fagales" ~ "Angiosperms",
+                               high_replace == "Fucales" ~ "Ochrophyta",
+                               high_replace == "Gigartinales" ~ "Rhodophyta",
+                               high_replace == "Gleicheniaceae" ~ "Tracheophyta",
+                               high_replace == "Halymeniales" ~ "Rhodophyta",
+                               high_replace == "Isochrysidales" ~ "Haptophyta",
+                               high_replace == "Liagoraceae" ~ "Rhodophyta",
+                               high_replace == "Naviculales" ~ "Bacillariophyta",
+                               high_replace == "Naviculaceae" ~ "Bacillariophyta",
+                               high_replace == "Nemaliales" ~ "Rhodophyta",
+                               high_replace == "Peridiniales" ~ "Miozoa",
+                               high_replace == "Pinaceae" ~ "Tracheophyta",
+                               high_replace == "Porphyridiales" ~ "Rhodophyta",
+                               high_replace == "Rhodomelaceae" ~ "Rhodophyta",
+                               high_replace == "Sargassaceae" ~ "Ochrophyta",
+                               high_replace == "Sphacelariales" ~ "Ochrophyta",
+                               high_replace == "Stylonematales" ~ "Rhodophyta",
+                               high_replace == "Trebouxia" ~ "Chlorophyta",
+                               high_replace == "Ulvales" ~ "Chlorophyta",
+                               high_replace == "Vaucheriales" ~ "Ochrophyta",
+                               TRUE ~ high_replace)) %>%
+    # remove Angiosperms
+    filter(highest != "Angiosperms")
+  
+  prey <- preytax %>%
+    pivot_longer(cols = G01:G40, names_to = "Extraction_ID") %>%
+    left_join(metadata, by = "Extraction_ID") %>%
+    group_by(Extraction_ID, highest, Gen_Spe) %>%
+    summarize(propcont = sum(value))
+}
+
+# function: plot prey taxa
+plot_prey_taxa <- function(prey){
+  FigureS2_Brandl_Gobies <- ggplot(prey, aes(x = highest, y = propcont)) +
+    geom_boxplot(aes(fill = Gen_Spe), position = position_dodge(), notch = FALSE, outlier.size = 0, outlier.alpha = 0, alpha = 0.75) +
+    geom_jitter(aes(fill = Gen_Spe, shape = Gen_Spe), position = position_jitterdodge(), alpha = 0.5) +
+    theme_bw() +
+    theme(legend.position = "none",
+          axis.text.x = element_text(angle = 45, hjust = 1),
+          axis.title.x = element_blank(),
+          legend.title = element_blank(),
+          legend.background = element_blank(),
+          axis.text = element_text(color = "black")) +
+    ylab("Mean relative read abundance of autotroph taxa") +
+    scale_fill_manual(values = gobycols, 
+                      labels = c(expression(italic("Fusigobius neophytus")), 
+                                 expression(italic("Gnatholepis cauerensis")))) +
+    scale_color_manual(values = gobycols, 
+                       labels = c(expression(italic("Fusigobius neophytus")), 
+                                  expression(italic("Gnatholepis cauerensis")))) +
+    scale_shape_manual(values = c(21, 23), 
+                       labels = c(expression(italic("Fusigobius neophytus")), 
+                                  expression(italic("Gnatholepis cauerensis"))))
+  
+  ggsave("output/plots/FigureS2_Brandl_Gobies.png", FigureS2_Brandl_Gobies, width = 8, height = 6)
+  
+  return(FigureS2_Brandl_Gobies)
+}
 
 
 #####################

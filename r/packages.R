@@ -1,6 +1,7 @@
 #load packages
 library(drake)
 library(tidyverse)
+library(lazyeval)
 library(magrittr)
 library(dplyr)
 library(purrr)
