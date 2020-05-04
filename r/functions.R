@@ -3,6 +3,13 @@
 #set colors for paper
 gobycols <- fish(2, option = "Pomacanthus_imperator")
 
+# function: write summary table to html
+write_sum_tab <- function(model, output){
+  out <- paste0("output/tables/", output)
+  tab_model(model, file = out)
+}
+
+
 #########################
 #### 1. COOCCURRENCE ####
 #########################
@@ -73,7 +80,7 @@ create_moorea_map <- function(geo, raw){
   scale_x_continuous(breaks = c(-149.9, -149.8)) +
   guides(fill=guide_legend(override.aes=list(shape=c(22,22,22)))) 
   
-  ggsave("output/plots/Figure1a_Brandl_Gobies.png", Fig1A, width = 4, height = 5)
+  # ggsave("output/plots/Figure1a_Brandl_Gobies.png", Fig1A, width = 4, height = 5)
   return(Fig1A)
 }
 
@@ -167,7 +174,7 @@ plot_jsdm_pred_compl <- function(predictions){
     xlab(expression(Predicted~probability~of~italic("F. neophytus")~occurrence)) +
     guides()
   
-  ggsave("output/plots/Figure1b_Brandl_Gobies.png", Fig1B, width = 4, height = 5)
+  # ggsave("output/plots/Figure1b_Brandl_Gobies.png", Fig1B, width = 4, height = 5)
   return(Fig1B)
 }
 
@@ -180,9 +187,10 @@ comb_figs <- function(f1, f2){
   
 }
 
-
+#######################
 #######################
 #### 2. PHYSIOLOGY ####
+#######################
 #######################
 
 # function: clean respirometry data
@@ -471,11 +479,59 @@ predict_from_brms_morph <- function(raw, ..., mod, draws, backtrans = F, transfo
 }
 
 
+# function: plot morphology data
+
+# plot predicted and raw values
+morpho_plot <- function(raw, yvar, predicted, ylableg){
+  ggplot(raw, aes_string(x = "SL", y = paste0(yvar))) +
+    geom_line(data = predicted, 
+              aes(x = SL, y = .value, group = paste(Species, .draw), color = Species), alpha = 0.1) +
+    geom_point(data = raw, aes(shape = Species, fill = Species), color = "black", size = 2, alpha = 0.9) +
+    theme_bw() +
+    theme(legend.position = "none",
+          legend.title = element_blank(),
+          legend.background = element_blank(),
+          axis.text = element_text(color = "black")) +
+    scale_fill_manual(values = gobycols, 
+                      labels = c(expression(italic("Fusigobius neophytus")), 
+                                 expression(italic("Gnatholepis cauerensis")))) +
+    scale_color_manual(values = gobycols, 
+                       labels = c(expression(italic("Fusigobius neophytus")), 
+                                  expression(italic("Gnatholepis cauerensis")))) +
+    scale_shape_manual(values = c(21, 23), 
+                       labels = c(expression(italic("Fusigobius neophytus")), 
+                                  expression(italic("Gnatholepis cauerensis")))) +
+    xlab("Standard length (mm)") +
+    ylab(paste0(ylableg))
+}
+
+# function: combine Fig 2A, 2B, 2C and 2D
+comb_figsS1 <- function(f1, f2, f3, f4){
+  FigureS1_Brandletal_Gobies <- (f1 | f2) / (f3 | f4) +
+    plot_annotation(tag_levels = 'A')
+  
+  return(FigureS1_Brandletal_Gobies)
+  
+  ggsave("output/plots/FigureS1_Brandl_Gobies.png", FigureS1_Brandletal_Gobies, width = 10, height = 8)
+}
+
+
+
+#########################
+#########################
+#### 4. GUT COMTENTS ####
+#########################
+#########################
+
+
+
+
 
 #####################
-#### 4. BEHAVIOR ####
 #####################
-
+#### 5. BEHAVIOR ####
+#####################
+#####################
 
 # function: clean aquarium trial data
 clean_aq_dat <- function(data){
@@ -503,13 +559,6 @@ run_brms_mod2 <- function(data){
       family = negbinomial, 
       control = list(adapt_delta = 0.99))
 }
-
-# function: write summary table to html
-write_sum_tab <- function(model, output){
-  out <- paste0("output/tables/", output)
-  tab_model(model, file = out)
-}
-
 
 # function: predict brms -- to be used throughout so general
 #' @param raw raw data the model was run on

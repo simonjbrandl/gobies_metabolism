@@ -242,12 +242,36 @@ plan <- drake_plan(
   output.supptab6 = write_sum_tab(gut.brms, "SuppTable6.html"),
   
   
+  # plot horizontal gape
+  output.figs1a = morpho_plot(ext.morpho.clean, "H_gape", hgape.pred, "Horizontal gape (mm)"),
+  
+  # plot vertical gape
+  output.figs1b = morpho_plot(ext.morpho.clean, "V_gape", vgape.pred, "Vertical gape (mm)"),
+  
+  # plot horizontal gape
+  output.figs1c = morpho_plot(ext.morpho.clean, "Girth", girth.pred, "Girth (mm)"),
+  
+  # plot horizontal gape
+  output.figs1d = morpho_plot(gut.morpho, "GIT", gut.pred, "GIT length (mm)"),
+  
+  # combine figure for supplemental figure S1
+  output.figS1abcd = comb_figsS1(output.figs1a, output.figs1b, output.figs1c, output.figs1d),
+  
+  #########################
+  #########################
+  #### 4. GUT COMTENTS ####
+  #########################
+  #########################
+  
+  gobies.meta = read.csv(file = "data/Goby_Metadata.csv"),
+  gobies.coi = read.csv(file = "data/COI_Gobies.csv"), 
+  gobies.23s = read.csv(file = "data/23S_Gobies.csv"),
   
   
   
   #####################
   #####################
-  #### 4. BEHAVIOR ####
+  #### 5. BEHAVIOR ####
   #####################
   #####################
   
@@ -267,7 +291,7 @@ plan <- drake_plan(
   loo.res = loo(behavior_brms_mod1, behavior_brms_mod2),
   
   # write summary table of brms_mod2 as html
-  output_supptab7 = write_sum_tab(behavior_brms_mod2, "SuppTable7.html"),
+  output_supptab7 = write_sum_tab(behavior_brms_mod2, "SuppTable7.doc"),
   
   # predict from brms_mod2 using generalizable function
   behavior.mod.pred = predict_from_brms(behav.data.clean, 
