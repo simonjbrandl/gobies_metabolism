@@ -10,9 +10,10 @@ facilitates coexistence in two coral reef fish species.”
 Instructions
 ------------
 
-All analyses were done in R. To compile all models, figures and tables,
-we use the [drake](https://github.com/ropensci/drake) package.  
-You can install `drake` from CRAN:
+All analyses for the current project were done in R, using the drake
+pipeline as provided by the [drake](https://github.com/ropensci/drake)
+package. You can use the pipeline to compile all models, figures, and
+tables. You can install `drake` from CRAN:
 
 ``` r
 install.packages("drake")
@@ -101,7 +102,7 @@ Datasets
     generic food addition – only before data are used for this paper.
     All videos, labelled by their respective trial, are accessible under
     the following link:
-    <https://www.youtube.com/playlist?list=PL9LfYSgK5itOtyll0jJr7Kszdf6olw6Ce>
+    <a href="https://www.youtube.com/playlist?list=PL9LfYSgK5itOtyll0jJr7Kszdf6olw6Ce" class="uri">https://www.youtube.com/playlist?list=PL9LfYSgK5itOtyll0jJr7Kszdf6olw6Ce</a>
 
 Supplemental info
 -----------------
@@ -111,60 +112,59 @@ packages:
 
     ## ─ Session info ───────────────────────────────────────────────────────────────
     ##  setting  value                       
-    ##  version  R version 3.6.2 (2019-12-12)
-    ##  os       Ubuntu 16.04.6 LTS          
-    ##  system   x86_64, linux-gnu           
+    ##  version  R version 3.6.1 (2019-07-05)
+    ##  os       macOS Mojave 10.14.6        
+    ##  system   x86_64, darwin15.6.0        
     ##  ui       X11                         
-    ##  language en_GB                       
-    ##  collate  en_GB.UTF-8                 
-    ##  ctype    en_GB.UTF-8                 
+    ##  language (EN)                        
+    ##  collate  en_US.UTF-8                 
+    ##  ctype    en_US.UTF-8                 
     ##  tz       Europe/Paris                
-    ##  date     2020-05-04                  
+    ##  date     2020-05-05                  
     ## 
     ## ─ Packages ───────────────────────────────────────────────────────────────────
     ##  package     * version date       lib source        
     ##  assertthat    0.2.1   2019-03-21 [1] CRAN (R 3.6.0)
-    ##  backports     1.1.6   2020-04-05 [1] CRAN (R 3.6.2)
-    ##  callr         3.4.3   2020-03-28 [1] CRAN (R 3.6.2)
-    ##  cli           2.0.2   2020-02-28 [1] CRAN (R 3.6.2)
+    ##  backports     1.1.5   2019-10-02 [1] CRAN (R 3.6.1)
+    ##  callr         3.4.2   2020-02-12 [1] CRAN (R 3.6.0)
+    ##  cli           2.0.2   2020-02-28 [1] CRAN (R 3.6.0)
     ##  crayon        1.3.4   2017-09-16 [1] CRAN (R 3.6.0)
     ##  desc          1.2.0   2018-05-01 [1] CRAN (R 3.6.0)
-    ##  devtools      2.3.0   2020-04-10 [1] CRAN (R 3.6.2)
-    ##  digest        0.6.25  2020-02-23 [1] CRAN (R 3.6.1)
-    ##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.1)
+    ##  devtools      2.2.1   2019-09-24 [1] CRAN (R 3.6.1)
+    ##  digest        0.6.25  2020-02-23 [1] CRAN (R 3.6.0)
+    ##  ellipsis      0.3.0   2019-09-20 [1] CRAN (R 3.6.0)
     ##  evaluate      0.14    2019-05-28 [1] CRAN (R 3.6.0)
-    ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.1)
-    ##  fs            1.4.1   2020-04-04 [1] CRAN (R 3.6.2)
-    ##  glue          1.4.0   2020-04-03 [1] CRAN (R 3.6.2)
-    ##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.1)
-    ##  knitr         1.28    2020-02-06 [1] CRAN (R 3.6.1)
+    ##  fansi         0.4.1   2020-01-08 [1] CRAN (R 3.6.0)
+    ##  fs            1.3.1   2019-05-06 [1] CRAN (R 3.6.0)
+    ##  glue          1.3.2   2020-03-12 [1] CRAN (R 3.6.0)
+    ##  htmltools     0.4.0   2019-10-04 [1] CRAN (R 3.6.0)
+    ##  knitr         1.27    2020-01-16 [1] CRAN (R 3.6.1)
     ##  magrittr      1.5     2014-11-22 [1] CRAN (R 3.6.0)
     ##  memoise       1.1.0   2017-04-21 [1] CRAN (R 3.6.0)
-    ##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.1)
+    ##  pkgbuild      1.0.6   2019-10-09 [1] CRAN (R 3.6.0)
     ##  pkgload       1.0.2   2018-10-29 [1] CRAN (R 3.6.0)
-    ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.1)
-    ##  processx      3.4.2   2020-02-09 [1] CRAN (R 3.6.1)
-    ##  ps            1.3.2   2020-02-13 [1] CRAN (R 3.6.1)
-    ##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.1)
-    ##  Rcpp          1.0.4.6 2020-04-09 [1] CRAN (R 3.6.2)
-    ##  remotes       2.1.1   2020-02-15 [1] CRAN (R 3.6.1)
-    ##  rlang         0.4.5   2020-03-01 [1] CRAN (R 3.6.2)
-    ##  rmarkdown     2.1     2020-01-20 [1] CRAN (R 3.6.1)
+    ##  prettyunits   1.1.1   2020-01-24 [1] CRAN (R 3.6.0)
+    ##  processx      3.4.2   2020-02-09 [1] CRAN (R 3.6.0)
+    ##  ps            1.3.2   2020-02-13 [1] CRAN (R 3.6.0)
+    ##  R6            2.4.1   2019-11-12 [1] CRAN (R 3.6.0)
+    ##  Rcpp          1.0.4   2020-03-17 [1] CRAN (R 3.6.0)
+    ##  remotes       2.1.1   2020-02-15 [1] CRAN (R 3.6.0)
+    ##  rlang         0.4.5   2020-03-01 [1] CRAN (R 3.6.0)
+    ##  rmarkdown     2.0     2019-12-12 [1] CRAN (R 3.6.0)
     ##  rprojroot     1.3-2   2018-01-03 [1] CRAN (R 3.6.0)
     ##  sessioninfo   1.1.1   2018-11-05 [1] CRAN (R 3.6.0)
-    ##  stringi       1.4.6   2020-02-17 [1] CRAN (R 3.6.1)
+    ##  stringi       1.4.6   2020-02-17 [1] CRAN (R 3.6.0)
     ##  stringr       1.4.0   2019-02-10 [1] CRAN (R 3.6.0)
-    ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 3.6.2)
-    ##  usethis       1.6.0   2020-04-09 [1] CRAN (R 3.6.2)
+    ##  testthat      2.3.2   2020-03-02 [1] CRAN (R 3.6.0)
+    ##  usethis       1.5.1   2019-07-04 [1] CRAN (R 3.6.0)
     ##  withr         2.1.2   2018-03-15 [1] CRAN (R 3.6.0)
-    ##  xfun          0.13    2020-04-13 [1] CRAN (R 3.6.2)
-    ##  yaml          2.2.1   2020-02-01 [1] CRAN (R 3.6.1)
+    ##  xfun          0.12    2020-01-13 [1] CRAN (R 3.6.0)
+    ##  yaml          2.2.0   2018-07-25 [1] CRAN (R 3.6.0)
     ## 
-    ## [1] /home/nschiettekatte/R/x86_64-pc-linux-gnu-library/3.6
-    ## [2] /usr/local/lib/R/site-library
-    ## [3] /usr/lib/R/site-library
-    ## [4] /usr/lib/R/library
+    ## [1] /Library/Frameworks/R.framework/Versions/3.6/Resources/library
 
-All code written by Simon J. Brandl (<simonjbrandl@gmail.com> and
-<https://github.com/simonjbrandl>). Please contact me for any issue or
-question.
+All code written by Simon J. Brandl
+(<a href="mailto:simonjbrandl@gmail.com" class="email">simonjbrandl@gmail.com</a>
+and
+<a href="https://github.com/simonjbrandl" class="uri">https://github.com/simonjbrandl</a>).
+Please contact me for any issue or question.
