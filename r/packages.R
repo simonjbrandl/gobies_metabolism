@@ -1,30 +1,48 @@
 #load packages
-library(drake)
-library(tidyverse)
-library(lazyeval)
-library(magrittr)
-library(dplyr)
-library(purrr)
-library(forcats)
-library(tidyr)
-library(modelr)
-library(tidybayes)
-library(ggplot2)
-library(ggstance)
-library(rstan)
-library(brms)
-library(ggrepel)
-library(RColorBrewer)
-library(ggpubr)
-library(vegan)
-library(ggfortify)
-library(bipartite)
-library(geomnet)
-library(GGally)
-library(fishualize)
-library(iNEXT)
-library(patchwork)
-library(jSDM)
-library(sjPlot)
-library(rgdal)
-library(broom)
+
+list.of.packages <- c(
+  "drake", 
+  "tidyverse",
+  "lazyeval",
+  "magrittr",
+  "dplyr",
+  "purrr",
+  "forcats",
+  "tidyr",
+  "modelr",
+  "tidybayes",
+  "ggstance",
+  "rstan",
+  "brms",
+  "ggrepel",
+  "RColorBrewer",
+  "ggpubr",
+  "vegan",
+  "ggfortify",
+  "bipartite",
+  #"geomnet",
+  "GGally",
+  "fishualize",
+  "iNEXT",
+  "patchwork",
+  "jSDM",
+  "sjPlot",
+  "rgdal",
+  "broom",
+  "devtools")
+
+# install if needed
+new.packages <- 
+  list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+
+if (length(new.packages)){
+  install.packages(new.packages)
+}
+
+# install latest version of geomnet if not installed yet
+if (!"geomnet" %in% installed.packages()){
+  devtools::install_github("sctyner/geomnet")}
+
+# load all packages
+lapply(list.of.packages, function(x){
+         library(x, character.only = TRUE)})
