@@ -1,6 +1,10 @@
 -   [Metabolic differentiation facilitates coexistence in two coral reef
     fish
     species](#metabolic-differentiation-facilitates-coexistence-in-two-coral-reef-fish-species)
+    -   [Instructions](#instructions)
+    -   [Details](#details)
+    -   [Datasets](#datasets)
+    -   [Supplemental info](#supplemental-info)
 
 Metabolic differentiation facilitates coexistence in two coral reef fish species
 ================================================================================

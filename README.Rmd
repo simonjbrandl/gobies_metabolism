@@ -6,12 +6,13 @@ output:
   md_document:
     variant: markdown_github
     toc: true
-    toc_depth: 1
+    toc_depth: 2
 ---
 
 # Metabolic differentiation facilitates coexistence in two coral reef fish species
 
 This repository contains the code and data to reproduce all tables and figures presented in Brandl et al. "Metabolic differentiation facilitates coexistence in two coral reef fish species." 
+
 
 ## Instructions
 All analyses for the current project were done in R, using the drake pipeline [drake](https://github.com/ropensci/drake). You can use drake to compile all models, figures, and tables.
