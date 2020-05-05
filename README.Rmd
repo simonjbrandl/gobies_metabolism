@@ -9,7 +9,7 @@ output:
     toc_depth: 1
 ---
 
-### Metabolic differentiation facilitates coexistence in two coral reef fish species
+# Metabolic differentiation facilitates coexistence in two coral reef fish species
 
 This repository contains the code and data to reproduce all tables and figures presented in Brandl et al. "Metabolic differentiation facilitates coexistence in two coral reef fish species." 
 
