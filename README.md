@@ -113,6 +113,13 @@ Datasets
 Supplemental info
 -----------------
 
+The paper contains three appendices (Appendix S1, Appendix S2, Appendix
+S3). - Appendix S1: Details pertaining to the sequencing protocol and
+bioinformatic pipeline used to compile sequence data used in the paper.
+- Appendix S2: Model summary outputs as obtained from the drake project,
+but in a separate word document. - Appendix S3: Supplemental figures 1
+and 2.
+
 This paper was produced using the following software and associated
 packages:
 

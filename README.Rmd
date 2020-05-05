@@ -61,6 +61,12 @@ The elements of this project include:
 5. aquarium.trials = Feeding trials: data are observations from videos of sand gobies in varying configurations in aquaria. id = identity of the observed individual; species = species affiliation (F. neophytus or G. cauerensis); video =  video ID; treatment = configuration tested; feed = number of bites taken over the duration of the observations (30 minutes); before_after = before or after generic food addition -- only before data are used for this paper. All videos, labelled by their respective trial, are accessible under the following link: https://www.youtube.com/playlist?list=PL9LfYSgK5itOtyll0jJr7Kszdf6olw6Ce 
 
 ## Supplemental info
+
+The paper contains three appendices (Appendix S1, Appendix S2, Appendix S3). 
+- Appendix S1: Details pertaining to the sequencing protocol and bioinformatic pipeline used to compile sequence data used in the paper.
+- Appendix S2: Model summary outputs as obtained from the drake project, but in a separate word document.
+- Appendix S3: Supplemental figures 1 and 2.
+
 This paper was produced using the following software and associated packages:
 
 ```{r, echo=FALSE}
