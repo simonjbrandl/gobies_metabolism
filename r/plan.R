@@ -272,23 +272,34 @@ plan <- drake_plan(
   gobies.23s = read.csv(file = "data/23S_Gobies.csv"),
   
   # clean metadata
-  clean.metadata = clean_meta(gobies.meta),
+  clean.metadata.all = clean_meta(gobies.meta),
   
   # clean COI & 23 S data
-  clean.coi = clean_sequence_data(gobies.coi, 11, 48, "genus", levels(gobies.meta$Genus)),
-  clean.23s = clean_sequence_data(gobies.23s, 10, 47, "Genus", levels(gobies.meta$Genus)),
+  clean.coi.all = clean_sequence_data(gobies.coi, 11, 48, "genus", c("Gnatholepis", "Fusigobius")),
+  clean.23s.all = clean_sequence_data(gobies.23s, 10, 47, "Genus", c("Gnatholepis", "Fusigobius")),
+  
+  # remove two Gnatholepis anjerensis
+  clean.coi = clean.coi.all %>%
+    select(-G06, -G09),
+  clean.23s = clean.23s.all %>%
+    select(-G06, -G09),
+  
+  # remove two Gnatholepis from metadata
+  clean.metadata = clean_meta(gobies.meta) %>%
+    filter(Extraction_ID != "G06") %>%
+    filter(Extraction_ID != "G09") ,
   
   # calculate presence/absence of sequences
-  pa.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = T, metric = "pa"),
-  pa.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = T, metric = "pa"),
+  pa.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "pa"),
+  pa.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "pa"),
   
   ##############################
   #### 3A. NICHES & NETWORK ####
   ##############################
   
   # calculate relative read abundance of sequences
-  rra.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = T, metric = "rra"),
-  rra.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = T, metric = "rra"),
+  rra.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "rra"),
+  rra.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "rra"),
   
   # caluclate species-level average of sequences
   rra.coi.species = sum_species_comp(rra.coi, clean.metadata),
@@ -310,10 +321,10 @@ plan <- drake_plan(
   prim.comb.network = combine_for_network(pa.coi.prepped, pa.23s.prepped),
   
   # run network analysis & collect output
-  goby.network.modules = computeModules(prim.comb.network[-1], method = "Beckett", forceLPA = FALSE),
+  # goby.network.modules = computeModules(prim.comb.network[-1], method = "Beckett", forceLPA = FALSE),
   # only run the line below if you have lots of time. Takes ~6hrs on a Macbook Pro 2.6 GHz Intel Core i7
   # output is the same as line above
-  # goby.network.modules = metaComputeModules(prim.comb.network[-1], method = "Beckett", N = 50, forceLPA = FALSE),
+  goby.network.modules = metaComputeModules(prim.comb.network[-1], method = "Beckett", N = 50, forceLPA = FALSE),
   
   modules = as.data.frame(goby.network.modules@modules[-1, -c(1,2) ]),
 
@@ -333,8 +344,8 @@ plan <- drake_plan(
   #########################
   
   # get number of sequences wide
-  nbseq.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 48, compute = F),
-  nbseq.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 47, compute = F),
+  nbseq.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = F),
+  nbseq.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = F),
   
   # turn into rarefactor format 
   nbseq.genspe.coi = wide_to_rare(nbseq.coi, clean.metadata),

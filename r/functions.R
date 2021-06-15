@@ -282,7 +282,7 @@ plot_smr_preds <- function(raw, response, prediction){
     geom_line(data = prediction, aes(x = log10(W), y = .value, group = paste(Species, .draw), 
                                      color = Species), alpha = 0.1) +
     geom_point(data = raw, aes(shape = Species, fill = Species), 
-               color = "black", size = 2, alpha = 0.9) +
+               color = "grey69", size = 2, alpha = 0.9) +
     theme_bw() +
     theme(legend.position = c(0.2, 0.9),
           legend.title = element_blank(),
@@ -368,7 +368,7 @@ plot_mmr_preds <- function(raw, response, prediction){
     geom_line(data = prediction, aes(x = log10(W), y = .value, group = paste(Species, .draw), 
                                      color = Species), alpha = 0.1) +
     geom_point(data = raw, aes(shape = Species, fill = Species), 
-               color = "black", size = 2, alpha = 0.9) +
+               color = "grey69", size = 2, alpha = 0.9) +
     theme_bw() +
     theme(legend.position = c(0.2, 0.9),
           legend.title = element_blank(),
@@ -538,7 +538,7 @@ clean_meta <- function(metadata){
 #' @param begin.col column number of first host fish specimen
 #' @param end.col column number of last host fish specimen
 #' @param column column by which to filter
-#' @param filter.by vector of strings to filter agains
+#' @param filter.by vector of strings to filter against
 
 clean_sequence_data <- function(raw, begin.col, end.col, column, filter.by){
   filter_criteria <- interp(~!y %in% x, .values=list(y = as.name(column), x = filter.by))
@@ -653,9 +653,9 @@ combine_for_network <- function(data1, data2){
 clean_modularity <- function(module.data, network.data, meta.data){
   # select only columns that correspond to fish specimens (i.e. length of network data rows)
   module.data %>%
-    select(1:36) %>%
+    select(1:34) %>%
     mutate(module = as.character(seq(1:nrow(module.data)))) %>%
-    pivot_longer(cols = 1:36, names_to = "sequence", values_to = "value") %>%
+    pivot_longer(cols = 1:34, names_to = "sequence", values_to = "value") %>%
     mutate(Extraction_ID = rep(network.data$Extraction_ID, nrow(module.data))) %>%
     filter(value > 0) %>%
     inner_join(meta.data) %>%
@@ -756,7 +756,7 @@ comb_figs3 <- function(f1, f2, f3){
     plot_annotation(tag_levels = 'A')
   
   
-  ggsave("output/plots/Figure3_Brandl_Gobies.png", Figure3_Brandl_Gobies, width = 14, height = 8)
+  ggsave("output/plots/Figure3_Brandl_Gobies.pdf", Figure3_Brandl_Gobies, width = 14, height = 8, useDingbats = F)
 }
 
 

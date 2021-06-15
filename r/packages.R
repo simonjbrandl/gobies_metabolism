@@ -2,6 +2,7 @@
 
 list.of.packages <- c(
   "drake", 
+  "modelr",
   "tidyverse",
   "lazyeval",
   "magrittr",
@@ -14,7 +15,7 @@ list.of.packages <- c(
   "vegan",
   "ggfortify",
   "bipartite",
-  #"geomnet",
+  "geomnet",
   "GGally",
   "fishualize",
   "iNEXT",
