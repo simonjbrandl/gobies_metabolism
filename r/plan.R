@@ -176,7 +176,32 @@ plan <- drake_plan(
   # combine A and B
   output.fig2abcd = comb_figs2(output.fig2a, output.fig2b, output.fig2c, output.fig2d),
   
-
+#### MMR ####
+  
+  # set prior
+  aer.prior = get_smr_prior("AerSco", respdat.clean),
+  
+  # run model
+  aer.brms = run_brms_smr("AerSco", respdat.clean, aer.prior),
+  
+  # predict from brms_mod2 using generalizable function for mass = 1g
+  aer.mod.pred.1g = predict_from_brms_phys(respdat.clean,
+                                           W = rep(1, n = 1000), TempC = mean(respdat.clean$TempC),
+                                           mod = aer.brms, 
+                                           draws = 1000, 
+                                           backtrans = T, transform = "e10"),
+  
+  # get summary of predictions for in-text infromation
+  aer.pred.sum = predict_summary_phys(aer.mod.pred.1g, MaxMR),
+  
+  # predict for full size range
+  aer.mod.pred.full = predict_from_brms_phys(respdat.clean,
+                                             W = seq_range(W, n = 1000), TempC = mean(respdat.clean$TempC),
+                                             mod = aer.brms, 
+                                             draws = 1000, 
+                                             backtrans = T, transform = "e10"),
+  
+  
   #######################
   #######################
   #### 3. MORPHOLOGY ####

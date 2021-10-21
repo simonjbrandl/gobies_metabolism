@@ -1,7 +1,8 @@
 #load packages
 
 list.of.packages <- c(
-  "drake", 
+  "drake",
+  "EcoSimR",
   "modelr",
   "tidyverse",
   "lazyeval",

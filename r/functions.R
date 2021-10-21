@@ -85,6 +85,8 @@ create_moorea_map <- function(geo, raw){
         legend.title = element_blank()) +
   scale_y_continuous(breaks = (c(-17.5,-17.6))) +
   scale_x_continuous(breaks = c(-149.9, -149.8)) +
+  xlab("ºLongitude") +
+    ylab("º Latitude") +
   guides(fill=guide_legend(override.aes=list(shape=c(22,22,22)))) 
   
   # ggsave("output/plots/Figure1a_Brandl_Gobies.png", Fig1A, width = 4, height = 5)
@@ -211,7 +213,10 @@ clean_resp_dat <- function(data){
     #get rid of the two trials where temperature fell below 26ºC
     filter(TempC >26) %>%
     #transform weight from kg to g
-    mutate(W = W*1000)
+    mutate(W = W*1000) %>%
+    #calculate mass-specific MMR and SMR
+    mutate(ms.smr = SMR/W) %>%
+    mutate(ms.mmr = MaxMR/W)
 }
 
 # specify brms priors 
@@ -951,8 +956,8 @@ predict_summary <- function(prediction.new){
 create_behavior_plot <- function(pred, raw){
   behavior.plot <- ggplot(pred, aes(y = pred.corr, x = rev(monovsmix), fill = species, color = species)) +
     geom_violin(trim = T, draw_quantiles = c(0.025,0.5,0.975), alpha = 0.75, position = position_dodge(width = 0.5)) +
-    geom_jitter(data = raw, aes(x = rev(monovsmix), y = feed/30, group = species, fill = species, shape = species), 
-                position = position_jitterdodge(jitter.width = 0.5, dodge.width = 0.5), alpha = 0.75, color = "black") +
+    geom_jitter(data = raw, aes(x = rev(monovsmix), y = (feed/30)+0.001, group = species, fill = species, shape = species), 
+                position = position_jitterdodge(jitter.width = 0.5, dodge.width = 0.5, jitter.height = 0), alpha = 0.75, color = "black") +
     theme_bw() + theme(legend.position = "none",
                        legend.title = element_blank(),
                        panel.grid = element_blank(),
@@ -962,7 +967,7 @@ create_behavior_plot <- function(pred, raw){
     scale_color_manual(values = c(gobycols)) +
     scale_fill_manual(values = c(gobycols)) +
     scale_shape_manual(values = c(21, 23)) +
-    scale_y_log10(limits = c(0.01,100)) +
+    scale_y_log10(limits = c(0.001,100), breaks = c(0.01, 0.1, 1, 10, 100)) +
     scale_x_discrete(labels = c("Single-species", "Mixed-species")) +
     add_fishape(family = "Gobiidae",
                 option = "Fusigobius_neophytus", 
