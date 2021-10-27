@@ -300,19 +300,9 @@ plan <- drake_plan(
   clean.metadata.all = clean_meta(gobies.meta),
   
   # clean COI & 23 S data
-  clean.coi.all = clean_sequence_data(gobies.coi, 11, 48, "genus", c("Gnatholepis", "Fusigobius")),
-  clean.23s.all = clean_sequence_data(gobies.23s, 10, 47, "Genus", c("Gnatholepis", "Fusigobius")),
+  clean.coi.all = clean_sequence_data(gobies.coi, 11, 46, "genus", c("Gnatholepis", "Fusigobius")),
+  clean.23s.all = clean_sequence_data(gobies.23s, 10, 45, "Genus", c("Gnatholepis", "Fusigobius")),
   
-  # remove two Gnatholepis anjerensis
-  clean.coi = clean.coi.all %>%
-    select(-G06, -G09),
-  clean.23s = clean.23s.all %>%
-    select(-G06, -G09),
-  
-  # remove two Gnatholepis from metadata
-  clean.metadata = clean_meta(gobies.meta) %>%
-    filter(Extraction_ID != "G06") %>%
-    filter(Extraction_ID != "G09") ,
   
   # calculate presence/absence of sequences
   pa.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "pa"),
