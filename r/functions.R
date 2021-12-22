@@ -183,7 +183,7 @@ plot_jsdm_pred_compl <- function(predictions){
     xlab(expression(Predicted~probability~of~italic("F. neophytus")~occurrence)) +
     guides()
   
-  # ggsave("output/plots/Figure1b_Brandl_Gobies.png", Fig1B, width = 4, height = 5)
+  ggsave("output/plots/Figure1b_Brandl_Gobies.eps", device="eps", Fig1B, width = 4, height = 5)
   return(Fig1B)
 }
 
@@ -429,7 +429,7 @@ comb_figs2 <- function(f1, f2, f3, f4){
   Figure2_Brandl_Gobies <- (f1 | f2) / (f3 | f4) +
     plot_annotation(tag_levels = 'A')
 
-  ggsave("output/plots/Figure2_Brandl_Gobies.png", Figure2_Brandl_Gobies, width = 11, height = 8)
+  ggsave("output/plots/Figure2_Brandl_Gobies.pdf", Figure2_Brandl_Gobies, width = 11, height = 8)
 
 }
 
@@ -1001,7 +1001,7 @@ create_behavior_plot <- function(pred, raw){
                 option = "Fusigobius_neophytus", 
                 xmin = 2.025, xmax = 2.25, ymin = 1.86,
                 fill = gobycols[1], alpha = 0.75)
-  ggsave("output/plots/Figure4_Brandl_Gobies.png", behavior.plot, width = 4, height = 5)
+  ggsave("output/plots/Figure4_Brandl_Gobies.pdf", behavior.plot, width = 6, height = 8)
   return(behavior.plot)
 }
 

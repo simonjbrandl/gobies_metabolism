@@ -305,16 +305,16 @@ plan <- drake_plan(
   
   
   # calculate presence/absence of sequences
-  pa.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "pa"),
-  pa.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "pa"),
+  pa.coi = widen_sequence_data(clean.coi.all, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "pa"),
+  pa.23s = widen_sequence_data(clean.23s.all, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "pa"),
   
   ##############################
   #### 3A. NICHES & NETWORK ####
   ##############################
   
   # calculate relative read abundance of sequences
-  rra.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "rra"),
-  rra.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "rra"),
+  rra.coi = widen_sequence_data(clean.coi.all, id.pos = 1, begin.col = 11, end.col = 46, compute = T, metric = "rra"),
+  rra.23s = widen_sequence_data(clean.23s.all, id.pos = 1, begin.col = 10, end.col = 45, compute = T, metric = "rra"),
   
   # caluclate species-level average of sequences
   rra.coi.species = sum_species_comp(rra.coi, clean.metadata),
@@ -359,8 +359,8 @@ plan <- drake_plan(
   #########################
   
   # get number of sequences wide
-  nbseq.coi = widen_sequence_data(clean.coi, id.pos = 1, begin.col = 11, end.col = 46, compute = F),
-  nbseq.23s = widen_sequence_data(clean.23s, id.pos = 1, begin.col = 10, end.col = 45, compute = F),
+  nbseq.coi = widen_sequence_data(clean.coi.all, id.pos = 1, begin.col = 11, end.col = 46, compute = F),
+  nbseq.23s = widen_sequence_data(clean.23s.all, id.pos = 1, begin.col = 10, end.col = 45, compute = F),
   
   # turn into rarefactor format 
   nbseq.genspe.coi = wide_to_rare(nbseq.coi, clean.metadata),
