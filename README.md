@@ -1,15 +1,13 @@
--   [Metabolic differentiation facilitates coexistence in two coral reef
-    fish
-    species](#metabolic-differentiation-facilitates-coexistence-in-two-coral-reef-fish-species)
+-   [Metabolic rates mirror morphological and behavioral differences in two sand-dwelling coral reef gobies](#metabolic-differentiation-facilitates-coexistence-in-two-coral-reef-fish-species)
     -   [Instructions](#instructions)
     -   [Details](#details)
     -   [Datasets](#datasets)
     -   [Supplemental info](#supplemental-info)
 
-# Metabolic differentiation facilitates coexistence in two coral reef fish species
+# Metabolic rates mirror morphological and behavioral differences in two sand-dwelling coral reef gobies
 
 This repository contains the code and data to reproduce all tables and
-figures presented in Brandl et al. “Metabolic rates mirror morphological
+figures presented in Brandl et al. “Metabolic rates mirror morphological
 and behavioral differences in two sand-dwelling coral reef gobies”
 
 ## Instructions
